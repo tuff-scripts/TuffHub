@@ -1,13 +1,12 @@
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
-TracerSize = 0.5,
+TracerSize = 1,
 TracerTransparency = 0,
 ShowDistance = true,
 
 FillTransparency = 0.75,
 OutlineTransparency = 0,
-OutlineColor = Color3.new(1, 1, 1),
 FadeTime = 0.5,
 
 TextSize = 20,
@@ -115,19 +114,23 @@ if not (cachedHL and onScreen and plr.Character) then return end
 local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
 bbText.TextColor3 = currColor stroke.Color = currColor
-cachedHL.FillColor = currColor cachedHL.OutlineColor = espLib.OutlineColor
-local screenSize = Camera.ViewportSize
-local origin = Vector2.new(screenSize.X/2, screenSize.Y)
-local destination = Vector2.new(sPoint.X, sPoint.Y)
-local mid = 0.5 * (origin+destination) local rotation = math.deg(math.atan2(destination.Y-origin.Y, destination.X-origin.X))
-local length = (origin-destination).Magnitude line.Position = UDim2.fromOffset(mid.X, mid.Y)
-local transparency = espLib.TracerTransparency
-line.Size = UDim2.new(0, length, 0, 1) line.Rotation = rotation
-line.BackgroundColor3 = currColor stroke.Color = currColor stroke.Thickness = espLib.TracerSize
+cachedHL.FillColor = currColor cachedHL.OutlineColor = currColor
+local tracersEnabled = espLab.Tracers
+if tracersEnabled then
+  local screenSize = Camera.ViewportSize
+  local origin = Vector2.new(screenSize.X/2, screenSize.Y)
+  local destination = Vector2.new(sPoint.X, sPoint.Y)
+  local mid = 0.5 * (origin+destination) local rotation = math.deg(math.atan2(destination.Y-origin.Y, destination.X-origin.X))
+  local length = (origin-destination).Magnitude
+  line.Position = UDim2.fromOffset(mid.X, mid.Y)
+  line.Size = UDim2.new(0, length, 0, 0)
+  line.Rotation = rotation
+  stroke.Color = currColor stroke.Thickness = espLib.TracerSize
+end
 if not (transparencyTable[obj] and enabledTable[obj]) then return end
 bbText.TextTransparency = espLib.TextTransparency bbText.TextStrokeTransparency = espLib.TextStrokeTransparency
 cachedHL.FillTransparency = espLib.FillTransparency cachedHL.OutlineTransparency = espLib.OutlineTransparency
-line.BackgroundTransparency = transparency stroke.Transparency = transparency
+if tracersEnabled then stroke.Transparency = espLib.TracerTransparency end
 end
 connsTable[obj] = RunService.RenderStepped:Connect(render)
 end
