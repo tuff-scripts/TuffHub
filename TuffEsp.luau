@@ -7,7 +7,7 @@ ShowDistance = true,
 
 FillTransparency = 0.75,
 OutlineTransparency = 0,
-FadeTime = 0.5,
+FadeTime = 0.35,
 
 TextSize = 20,
 TextTransparency = 0,
