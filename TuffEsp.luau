@@ -115,7 +115,7 @@ local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
 bbText.TextColor3 = currColor stroke.Color = currColor
 cachedHL.FillColor = currColor cachedHL.OutlineColor = currColor
-print(espLib) local tracersEnabled = espLib.Tracers
+local tracersEnabled = espLib.Tracers
 if tracersEnabled then
   local screenSize = Camera.ViewportSize
   local origin = Vector2.new(screenSize.X/2, screenSize.Y)
@@ -123,10 +123,10 @@ if tracersEnabled then
   local mid = 0.5 * (origin+destination) local rotation = math.deg(math.atan2(destination.Y-origin.Y, destination.X-origin.X))
   local length = (origin-destination).Magnitude
   line.Position = UDim2.fromOffset(mid.X, mid.Y)
-  line.Size = UDim2.new(0, length, 0, 0)
-  line.Rotation = rotation
+  line.Size = UDim2.new(0, length, 0, 0) line.Rotation = rotation
   stroke.Color = currColor stroke.Thickness = espLib.TracerSize
-end
+  line.Visible = true
+else line.Visible = false end
 if not (transparencyTable[obj] and enabledTable[obj]) then return end
 bbText.TextTransparency = espLib.TextTransparency bbText.TextStrokeTransparency = espLib.TextStrokeTransparency
 cachedHL.FillTransparency = espLib.FillTransparency cachedHL.OutlineTransparency = espLib.OutlineTransparency
