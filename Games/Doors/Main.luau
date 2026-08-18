@@ -5,8 +5,18 @@ local PLRS = game:GetService("Players")
 local plr = PLRS.LocalPlayer
 local plrGui = plr.PlayerGui
 
+if not TuffHub then
+  getgenv().TuffHub = {
+    Ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/tuff-scripts/TuffHub/refs/heads/main/TuffUI.luau"))(),
+    Esp = loadstring(game:HttpGet("https://raw.githubusercontent.com/tuff-scripts/TuffHub/refs/heads/main/TuffEsp.luau"))(),
+  }
+end
+local ui = TuffHub.Ui
+local esp = TuffHub.Esp
+
 local gameData = RS.GameData
 local Floor = gameData.Floor.Value
+local CRoom = gameData.LatestRoom
 
 local remotes = false local mods = RS.LiveModifiers or Instance.new("Folder")
 if RS:FindFirstChild("RemotesFolder") then remotes = RS.RemotesFolder elseif RS:FindFirstChild("EntityInfo") then remotes = RS.EntityInfo elseif RS:FindFirstChild("Bricks") then remotes = RS.Bricks if Floor == "Hotel" then Floor = "OldHotel" end end
@@ -21,6 +31,9 @@ local padlockCode = remotes.PL
 
 local cRooms = workspace.CurrentRooms
 
+local settings = {
+  DoorsEsp = false,
+}
 local anticheatDisabled = false
 local climbingConn = nil
 local currentHumanoid = nil
@@ -169,7 +182,36 @@ for _, dRemData in disableable do
   entTab:CreateToggle(eName, "Disable "..eName.." damage.", true, function(v) if v then rOrig.Parent = remotes rFake.Parent = nil return end rFake.Parent = remotes rOrig.Parent = nil end)
 end
 entTab:CreateToggle("Lookman", "Toggle Lookman entity.", true, function(v) lookman = v if v then local n = #hidden if n > 0 then for i = n, 1, -1 do local c = hidden[i] if c.Name == "BackdoorLookman" then c.Parent = workspace hidden[i] = nil end end end return end for _, c in pairs(workspace:GetChildren()) do if c.Name == "BackdoorLookman" then table.insert(hidden, c) c.Parent = nil end end end) entTab:CreateToggle("Eyes", "Toggle Eyes entity.", true, function(v) eyes = v if v then local n = #hidden if n > 0 then for i = n, 1, -1 do local c = hidden[i] if c.Name == "Eyes" then c.Parent = workspace hidden[i] = nil end end end return end for _, c in pairs(workspace:GetChildren()) do if c.Name == "Eyes" then table.insert(hidden, c) c.Parent = nil end end end)
---Puzzles
+--Visuals👁️
+local function doorVisible(n)
+  return n ~= 100
+end
+local vsTab = window:CreateTab("Visuals")
+vsTab:CreateLabel("Esp", Color3.new(1, 1, 0))
+vsTab:CreateToggle("Rainbow", "Toggle rainbow effect", false, function(v) esp.Rainbow = v end)
+vsTab:CreateToggle("Tracer", "Toggle tracing lines", false, function(v) esp.Tracers = v end)
+local latest = {}
+local function updRoomEsp()
+  local rIdx = plr:GetAttribute("CurrentRoom")
+  local nidx  = 1+rIdx
+  local room = cRooms:FindFirstChild(""..rIdx)
+  if settings.DoorsEsp then
+  local nextRoom = cRooms:FindFirstChild(""..nidx)
+  local cdoor = room:WaitForChild("Door")
+  cdoor:WaitForChild("Hidden").Transparency = 1
+  if latest[cdoor] then latest[cdoor] = nil esp:UpdateText(cdoor, "Door "..rIdx+1) else esp:AddEsp({Obj = cdoor, Name = "Door "..rIdx+1, Color = Color3.new(1, 1, 0)}) end
+  if not (nextRoom and doorVisible(nidx)) then if #latest == 1 then esp:RemoveEsp(latest[1]) end latest = {[cdoor] = true} return end
+  local ndoor = nextRoom:WaitForChild("Door")
+  ndoor:WaitForChild("Hidden").Transparency = 1
+  if latest[ndoor] then latest[ndoor] = nil esp:UpdateText(ndoor, "Door "..nidx+1) else esp:AddEsp({Obj = ndoor, Name = "Door "..nidx+1, Color = Color3.new(1, 1, 0)}) end
+  for c, _ in pairs(latest) do esp:RemoveEsp(c) end
+  latest = {[cdoor] = true, [ndoor] = true}
+  end
+end updRoomEsp() plr:GetAttributeChangedSignal("CurrentRoom"):Connect(updRoomEsp)
+vsTab:CreateToggle("Doors", "Highlight next door", false, function(v)
+  if v then settings.DoorsEsp = true updRoomEsp() return end settings.DoorsEsp = false for c, _ in pairs(latest) do esp:RemoveObjectData(c) end table.clear(latest)
+end)
+--Puzzles✌️⚠️💥🫪😡🐱🤑🔑🛢️😎💥🔥💀👁️👌
 local pzTab = window:CreateTab("Puzzles")
 if true then pzTab:CreateLabel("Puzzles options are WIP at this moment") return end
 if Floor == "Hotel" then
