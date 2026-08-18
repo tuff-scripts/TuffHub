@@ -115,7 +115,7 @@ local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
 bbText.TextColor3 = currColor stroke.Color = currColor
 cachedHL.FillColor = currColor cachedHL.OutlineColor = currColor
-local tracersEnabled = espLib.Tracers
+print(espLib) local tracersEnabled = espLib.Tracers
 if tracersEnabled then
   local screenSize = Camera.ViewportSize
   local origin = Vector2.new(screenSize.X/2, screenSize.Y)
