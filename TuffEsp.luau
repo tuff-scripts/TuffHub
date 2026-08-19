@@ -52,13 +52,17 @@ for i = 1, 16 do local idx = math.random(1, len) hash[i] = chars:sub(idx, idx) e
 end
 function espLib:getGuiFolder() local fold = Instance.new("Folder") fold.Name = espLib:newHash() fold.Parent = availableGuiHolder return fold end
 
+print(1)
 local ui = espLib:getGuiFolder()
-
+print(2)
 local ScreenGui = new("ScreenGui", ui, {ResetOnSpawn = false, IgnoreGuiInset = true})
+print(3)
 local HighlightsFolder = INST("Folder") HighlightsFolder.Name = espLib:newHash() HighlightsFolder.Parent = ScreenGui
+print(4)
 local BillboardsFolder = INST("Folder") BillboardsFolder.Name = espLib:newHash() BillboardsFolder.Parent = ScreenGui
+print(5)
 TracersHolder = new("Frame", ScreenGui, {ZIndex = 0, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Name = espLib:newHash()})
-
+print(6)
 function espLib:RemoveObjectData(object)
 local hlTable = espLib.Highlights local lnTable = espLib.Lines local bbTable = espLib.Billboards local connsTable = espLib.Connections
 local hl = hlTable[object] if hl then hl:Destroy() hlTable[object] = nil end
@@ -68,6 +72,7 @@ local conn = connsTable[object] if conn then conn:Disconnect() connsTable[object
 espLib.Colors[object] = nil espLib.Names[object] = nil espLib.Enabled[object] = nil espLib.TransparencyEnabled[object] = nil
 end
 function espLib:AddEsp(data)
+print("try add")
 local obj: Model = data.Obj or data.Object if not obj then return end
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
 local colorsTable = espLib.Colors local namesTable = espLib.Names
