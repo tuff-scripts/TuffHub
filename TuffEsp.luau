@@ -1,7 +1,7 @@
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
-TracerSize = 1,
+TracerSize = 0.75,
 TracerTransparency = 0,
 ShowDistance = true,
 
