@@ -33,7 +33,7 @@ local TweenService = game:GetService("TweenService")
 
 local plr = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-workspace:GetPropertyChangedSignal("Current camera"):Connect(function() Camera = workspace.CurrentCamera end)
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = workspace.CurrentCamera end)
 
 local availableGuiHolder = getgenv and game:GetService("CoreGui") or plr.PlayerGui
 
