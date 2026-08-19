@@ -1,3 +1,4 @@
+print(0)
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
