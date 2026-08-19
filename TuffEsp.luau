@@ -34,7 +34,8 @@ local TweenService = game:GetService("TweenService")
 
 local plr = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-
+workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() print("camera updated") Camera = workspace.CurrentCamera end)
+print("include camera upd")
 local availableGuiHolder = plr.PlayerGui
 
 local INST = Instance.new local quad = Enum.EasingStyle.Quad
