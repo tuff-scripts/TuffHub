@@ -1,13 +1,13 @@
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
-TracerSize = 0.75,
+TracerSize = 1,
 TracerTransparency = 0,
 ShowDistance = true,
 
 FillTransparency = 0.75,
 OutlineTransparency = 0,
-FadeTime = 0.35,
+FadeTime = 0.5,
 
 TextSize = 20,
 TextTransparency = 0,
@@ -33,9 +33,9 @@ local TweenService = game:GetService("TweenService")
 
 local plr = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() print("camera updated") Camera = workspace.CurrentCamera end)
-print("include camera upd")
-local availableGuiHolder = plr.PlayerGui
+workspace:GetPropertyChangedSignal("Current camera"):Connect(function() Camera = workspace.CurrentCamera end)
+
+local availableGuiHolder = getgenv and game:GetService("CoreGui") or plr.PlayerGui
 
 local INST = Instance.new local quad = Enum.EasingStyle.Quad
 local bottom = UDim2.new(0.5, 0, 1, 0)
@@ -53,17 +53,13 @@ for i = 1, 16 do local idx = math.random(1, len) hash[i] = chars:sub(idx, idx) e
 end
 function espLib:getGuiFolder() local fold = Instance.new("Folder") fold.Name = espLib:newHash() fold.Parent = availableGuiHolder return fold end
 
-print(1)
 local ui = espLib:getGuiFolder()
-print(2)
+
 local ScreenGui = new("ScreenGui", ui, {ResetOnSpawn = false, IgnoreGuiInset = true})
-print(3)
 local HighlightsFolder = INST("Folder") HighlightsFolder.Name = espLib:newHash() HighlightsFolder.Parent = ScreenGui
-print(4)
 local BillboardsFolder = INST("Folder") BillboardsFolder.Name = espLib:newHash() BillboardsFolder.Parent = ScreenGui
-print(5)
 TracersHolder = new("Frame", ScreenGui, {ZIndex = 0, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, Name = espLib:newHash()})
-print(6)
+
 function espLib:RemoveObjectData(object)
 local hlTable = espLib.Highlights local lnTable = espLib.Lines local bbTable = espLib.Billboards local connsTable = espLib.Connections
 local hl = hlTable[object] if hl then hl:Destroy() hlTable[object] = nil end
@@ -73,11 +69,8 @@ local conn = connsTable[object] if conn then conn:Disconnect() connsTable[object
 espLib.Colors[object] = nil espLib.Names[object] = nil espLib.Enabled[object] = nil espLib.TransparencyEnabled[object] = nil
 end
 function espLib:AddEsp(data)
-print("try add") print(data.Obj)
 local obj: Model = data.Obj or data.Object if not obj then return end
-print(9)
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
-print(10)
 local colorsTable = espLib.Colors local namesTable = espLib.Names
 local name = data.Name or "Unknown" namesTable[obj] = name enabledTable[obj] = true
 local color = data.Color or Color3.new(1, 1, 1) colorsTable[obj] = color
@@ -89,8 +82,6 @@ obj.PrimaryPart = root INST("Humanoid", obj).Name = "HighlightHumanoid"
 root.Transparency = 0.9999 root.Material = Enum.Material.Plastic
 end
 end
-print(11)
-print(HighlightsFolder)
 local hlTable = espLib.Highlights local lnTable = espLib.Lines local bbTable = espLib.Billboards local connsTable = espLib.Connections
 local cConn = connsTable[obj] if cConn then cConn:Disconnect() connsTable[obj] = nil end
 local thl = hlTable[obj] if thl then thl:Destroy() hlTable[obj] = nil end
@@ -133,10 +124,10 @@ if tracersEnabled then
   local mid = 0.5 * (origin+destination) local rotation = math.deg(math.atan2(destination.Y-origin.Y, destination.X-origin.X))
   local length = (origin-destination).Magnitude
   line.Position = UDim2.fromOffset(mid.X, mid.Y)
-  line.Size = UDim2.new(0, length, 0, 0) line.Rotation = rotation
+  line.Size = UDim2.new(0, length, 0, 0)
+  line.Rotation = rotation
   stroke.Color = currColor stroke.Thickness = espLib.TracerSize
-  line.Visible = true
-else line.Visible = false end
+end
 if not (transparencyTable[obj] and enabledTable[obj]) then return end
 bbText.TextTransparency = espLib.TextTransparency bbText.TextStrokeTransparency = espLib.TextStrokeTransparency
 cachedHL.FillTransparency = espLib.FillTransparency cachedHL.OutlineTransparency = espLib.OutlineTransparency
