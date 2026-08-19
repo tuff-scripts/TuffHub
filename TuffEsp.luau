@@ -73,7 +73,7 @@ local conn = connsTable[object] if conn then conn:Disconnect() connsTable[object
 espLib.Colors[object] = nil espLib.Names[object] = nil espLib.Enabled[object] = nil espLib.TransparencyEnabled[object] = nil
 end
 function espLib:AddEsp(data)
-print("try add")
+print("try add") print(data.Obj)
 local obj: Model = data.Obj or data.Object if not obj then return end
 print(9)
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
