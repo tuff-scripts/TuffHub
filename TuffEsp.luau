@@ -149,6 +149,7 @@ local line = lnTable[obj] if line then tween(line[1], {BackgroundTransparency = 
 end
 function espLib:UpdateText(obj, text) local texts = espLib.Names if not texts[obj] then return end texts[obj] = text end
 function espLib:UpdateColo(obj, color) local colors = espLib.Colors if not colors[obj] then return end colors[obj] = color end
+workspace.DescendantRemoved:Connect(function(d) if not espLib.Lines[d] then return end espLib:RemoveObjectData(d) end)
 
 local hue = 0 rStep = 0
 RunService.RenderStepped:Connect(function(d)
