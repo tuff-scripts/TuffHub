@@ -75,7 +75,9 @@ end
 function espLib:AddEsp(data)
 print("try add")
 local obj: Model = data.Obj or data.Object if not obj then return end
+print(9)
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
+print(10)
 local colorsTable = espLib.Colors local namesTable = espLib.Names
 local name = data.Name or "Unknown" namesTable[obj] = name enabledTable[obj] = true
 local color = data.Color or Color3.new(1, 1, 1) colorsTable[obj] = color
@@ -87,6 +89,8 @@ obj.PrimaryPart = root INST("Humanoid", obj).Name = "HighlightHumanoid"
 root.Transparency = 0.9999 root.Material = Enum.Material.Plastic
 end
 end
+print(11)
+print(HighlightsFolder)
 local hlTable = espLib.Highlights local lnTable = espLib.Lines local bbTable = espLib.Billboards local connsTable = espLib.Connections
 local cConn = connsTable[obj] if cConn then cConn:Disconnect() connsTable[obj] = nil end
 local thl = hlTable[obj] if thl then thl:Destroy() hlTable[obj] = nil end
