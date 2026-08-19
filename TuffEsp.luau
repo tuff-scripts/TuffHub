@@ -31,12 +31,10 @@ local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 
-print("start")
 local plr = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-if not Camera then workspace:GetPropertyChangedSignal("CurrentCamera"):Wait() Camera = workspace.CurrentCamera end
-print("loaded")
-local availableGuiHolder = getgenv and game:GetService("CoreGui") or plr.PlayerGui
+
+local availableGuiHolder = plr.PlayerGui
 
 local INST = Instance.new local quad = Enum.EasingStyle.Quad
 local bottom = UDim2.new(0.5, 0, 1, 0)
