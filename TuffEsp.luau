@@ -1,4 +1,4 @@
-print(">Loading Esp Library V1.1.3")
+print(">Loading Esp Library V1.1.4")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
@@ -47,6 +47,12 @@ end
 local function tween(object, properties)
 TweenService:Create(object, TweenInfo.new(espLib.FadeTime, quad), properties):Play()
 end
+local function getColor(obj)
+  local cD = espLib.Colors[obj] if not cD then return Color3.new(1, 1, 1) end
+  if espLib.Rainbow or cD == "Rainbow" then return espLib.RainbowColor end
+  if typeof(cD) == "Color3" then return cD end
+  return Color3.new(1, 1, 1)
+end
 
 function espLib:newHash()
 local hash = {} local chars = "AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz0123456789!@#$%^&*()_-=`.,/" local len = #chars
@@ -74,7 +80,7 @@ local obj: Model = data.Obj or data.Object if not obj then return end
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
 local colorsTable = espLib.Colors local namesTable = espLib.Names
 local name = data.Name or "Unknown" namesTable[obj] = name enabledTable[obj] = true
-local color = data.Color if color == "Rainbow" then color = espLib.RainbowColor elseif not color then color = Color3.new(1, 1, 1) end colorsTable[obj] = color
+local color = data.Color or Color3.new(1, 1, 1) colorsTable[obj] = color
 if data.Transparent then
 local hum = obj:FindFirstChild("HighlightHumanoid")
 if not hum then
@@ -88,10 +94,10 @@ local cConn = connsTable[obj] if cConn then cConn:Disconnect() connsTable[obj] =
 local thl = hlTable[obj] if thl then thl:Destroy() hlTable[obj] = nil end
 local tln = lnTable[obj] if tln then tln[1]:Destroy() lnTable[obj] = nil end
 local tbb = bbTable[obj] if tbb then tbb[1]:Destroy() bbTable[obj] = nil end
-
-local hl = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = color, Adornee = obj, Name = espLib:newHash()})
+local cCol = getColor(obj)
+local hl = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = cCol, Adornee = obj, Name = espLib:newHash()})
 local bbFrame = new("Frame", BillboardsFolder, {Visible = false, Size = UDim2.fromScale(1, 1), BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), Name = espLib:newHash()})
-local bbText = new("TextLabel", bbFrame, {BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), RichText = true, TextSize = espLib.TextSize, TextTransparency = 1, TextColor3 = color, Text = name, TextStrokeTransparency = espLib.TextOutlineTransparency, Font = espLib.Font, Name = espLib:newHash()})
+local bbText = new("TextLabel", bbFrame, {BackgroundTransparency = 1, Size = UDim2.fromScale(1, 1), RichText = true, TextSize = espLib.TextSize, TextTransparency = 1, TextColor3 = cCol, Text = name, TextStrokeTransparency = espLib.TextOutlineTransparency, Font = espLib.Font, Name = espLib:newHash()})
 
 local line = new("Frame", TracersHolder, {Size = UDim2.fromScale(0, 0), BackgroundTransparency = 1, AnchorPoint = Vector2.new(0.5, 0.5), BorderSizePixel = 0, Name = espLib:newHash()})
 local stroke = new("UIStroke", line, {Transparency = 1, Thickness = espLib.TracerSize, ApplyStrokeMode = Enum.ApplyStrokeMode.Border, Name = espLib:newHash()})
@@ -111,8 +117,7 @@ if onScreen then
 bbFrame.Position = UDim2.fromOffset(sPoint.X, sPoint.Y)
 if enabledTable[obj] and not cachedHL then cachedHL = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = color, Adornee = obj, Name = espLib:newHash()}) hlTable[obj] = cachedHL end
 elseif cachedHL then cachedHL:Destroy() hlTable[obj] = nil end
-local currColor = false
-if espLib.Rainbow then currColor = espLib.RainbowColor else currColor = colorsTable[obj] if not currColor then currColor = Color3.new(1, 1, 1) elseif currColor == "Rainbow" then currColor = espLib.RainbowColor end end
+local currColor = getColor(obj)
 if not (cachedHL and onScreen and plr.Character) then return end
 local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
