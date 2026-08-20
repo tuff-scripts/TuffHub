@@ -1,4 +1,4 @@
-print(">Loading Esp Library V1.1.4")
+print(">Loading Esp Library V1.1.5")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
@@ -113,11 +113,11 @@ local pos = obj:GetPivot().Position
 local sPoint, onScreen = Camera:WorldToViewportPoint(pos)
 line.Visible = onScreen bbFrame.Visible = onScreen
 local cachedHL = hlTable[obj]
+local currColor = getColor(obj)
 if onScreen then
 bbFrame.Position = UDim2.fromOffset(sPoint.X, sPoint.Y)
-if enabledTable[obj] and not cachedHL then cachedHL = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = color, Adornee = obj, Name = espLib:newHash()}) hlTable[obj] = cachedHL end
+if enabledTable[obj] and not cachedHL then cachedHL = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = currColor, Adornee = obj, Name = espLib:newHash()}) hlTable[obj] = cachedHL end
 elseif cachedHL then cachedHL:Destroy() hlTable[obj] = nil end
-local currColor = getColor(obj)
 if not (cachedHL and onScreen and plr.Character) then return end
 local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
