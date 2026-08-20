@@ -112,7 +112,7 @@ bbFrame.Position = UDim2.fromOffset(sPoint.X, sPoint.Y)
 if enabledTable[obj] and not cachedHL then cachedHL = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = color, Adornee = obj, Name = espLib:newHash()}) hlTable[obj] = cachedHL end
 elseif cachedHL then cachedHL:Destroy() hlTable[obj] = nil end
 local currColor = false
-if espLib.Rainbow then currColor = espLib.RainbowColor else currColor = colorsTable[obj] if not currColor then currColor = Color3.new(1, 1, 1) else currColor == "Rainbow" then currColor = espLib.RainbowColor end end
+if espLib.Rainbow then currColor = espLib.RainbowColor else currColor = colorsTable[obj] if not currColor then currColor = Color3.new(1, 1, 1) elseif currColor == "Rainbow" then currColor = espLib.RainbowColor end end
 if not (cachedHL and onScreen and plr.Character) then return end
 local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
