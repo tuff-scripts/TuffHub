@@ -1,3 +1,4 @@
+print("Loading Esp Library V1.1")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
@@ -33,7 +34,7 @@ local TweenService = game:GetService("TweenService")
 
 local plr = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
-workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() Camera = workspace.CurrentCamera end)
+workspace:GetPropertyChangedSignal("Current camera"):Connect(function() Camera = workspace.CurrentCamera end)
 
 local availableGuiHolder = getgenv and game:GetService("CoreGui") or plr.PlayerGui
 
@@ -110,7 +111,8 @@ if onScreen then
 bbFrame.Position = UDim2.fromOffset(sPoint.X, sPoint.Y)
 if enabledTable[obj] and not cachedHL then cachedHL = new("Highlight", HighlightsFolder, {FillTransparency = 1, OutlineTransparency = 1, FillColor = color, Adornee = obj, Name = espLib:newHash()}) hlTable[obj] = cachedHL end
 elseif cachedHL then cachedHL:Destroy() hlTable[obj] = nil end
-local currColor = espLib.Rainbow and espLib.RainbowColor or colorsTable[obj] or Color3.new(1, 1, 1)
+local currColor = false
+if espLib.Rainbow then currColor = espLib.RainbowColor else currColor = colorsTable[obj] if not currColor then currColor = Color3.new(1, 1, 1) else currColor == "Rainbow" then currColor = espLib.RainbowColor end end
 if not (cachedHL and onScreen and plr.Character) then return end
 local Dist = plr:DistanceFromCharacter(pos)
 if espLib.ShowDistance then bbText.Text = namesTable[obj].."\n["..math.round(Dist).."]" else bbText.Text = namesTable[obj] end
@@ -131,7 +133,7 @@ end
 if not (transparencyTable[obj] and enabledTable[obj]) then return end
 bbText.TextTransparency = espLib.TextTransparency bbText.TextStrokeTransparency = espLib.TextStrokeTransparency
 cachedHL.FillTransparency = espLib.FillTransparency cachedHL.OutlineTransparency = espLib.OutlineTransparency
-if tracersEnabled then stroke.Transparency = espLib.TracerTransparency end
+if tracersEnabled then stroke.Transparency = espLib.TracerTransparency else stroke.Transparency = 1 end
 end
 connsTable[obj] = RunService.RenderStepped:Connect(render)
 end
