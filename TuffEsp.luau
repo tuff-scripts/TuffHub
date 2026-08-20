@@ -1,4 +1,4 @@
-print("Loading Esp Library V1.1.1")
+print(">Loading Esp Library V1.1.1")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
