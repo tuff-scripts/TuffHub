@@ -1,4 +1,4 @@
-print(">Loading Esp Library V1.1.1")
+print(">Loading Esp Library V1.1.3")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
@@ -74,7 +74,7 @@ local obj: Model = data.Obj or data.Object if not obj then return end
 local enabledTable = espLib.Enabled if enabledTable[obj] then return end
 local colorsTable = espLib.Colors local namesTable = espLib.Names
 local name = data.Name or "Unknown" namesTable[obj] = name enabledTable[obj] = true
-local color = data.Color or Color3.new(1, 1, 1) colorsTable[obj] = color
+local color = data.Color if color == "Rainbow" then color = espLib.RainbowColor elseif not color then color = Color3.new(1, 1, 1) end colorsTable[obj] = color
 if data.Transparent then
 local hum = obj:FindFirstChild("HighlightHumanoid")
 if not hum then
