@@ -1,4 +1,4 @@
-print(">Loading Esp Library V1.1.5.1")
+print(">Loading Esp Library V1.2.0")
 local espLib = {
 Font = Enum.Font.RobotoCondensed,
 Tracers = false,
@@ -156,7 +156,7 @@ local hl = hlTable[obj] if hl then tween(hl, {FillTransparency = 1, OutlineTrans
 local line = lnTable[obj] if line then tween(line[1], {BackgroundTransparency = 1}) tween(line[2], {Transparency = 1}) end
 end
 function espLib:UpdateText(obj, text) local texts = espLib.Names if not texts[obj] then return end texts[obj] = text end
-function espLib:UpdateColo(obj, color) local colors = espLib.Colors if not colors[obj] then return end colors[obj] = color end
+function espLib:UpdateColor(obj, color) local colors = espLib.Colors if not colors[obj] then return end colors[obj] = color end
 workspace.DescendantRemoving:Connect(function(d) if not espLib.Lines[d] then return end espLib:RemoveObjectData(d) end)
 
 local hue = 0 rStep = 0
