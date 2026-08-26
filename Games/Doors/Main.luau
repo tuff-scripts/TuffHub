@@ -1,23 +1,22 @@
 local RS = game:GetService("ReplicatedStorage")
 local RUNSERV = game:GetService("RunService")
 local PLRS = game:GetService("Players")
+local SGUI = game:GetService("StarterGui")
+local PRS = game:GetService("ProximityPromptService")
 
 local plr = PLRS.LocalPlayer
 local plrGui = plr.PlayerGui
 
-if not TuffHub then
-  getgenv().TuffHub = {
-    Ui = loadstring(game:HttpGet("https://raw.githubusercontent.com/tuff-scripts/TuffHub/refs/heads/main/TuffUI.luau"))(),
-    Esp = loadstring(game:HttpGet("https://raw.githubusercontent.com/tuff-scripts/TuffHub/refs/heads/main/TuffEsp.luau"))(),
-  }
-end
 local ui = TuffHub.Ui
 local esp = TuffHub.Esp
 
 local gameData = RS.GameData
+local fRep = RS.FloorReplicated
 local Floor = gameData.Floor.Value
 local CRoom = gameData.LatestRoom
 
+local doorOffset = 1
+if Floor == "Mines" then doorOffset = 101 elseif Floor == "Backdoor" then doorOffset = -50 elseif fRep:FindFirstChild("KrampusIntro") then doorOffset = 50 end
 local remotes = false local mods = RS.LiveModifiers or Instance.new("Folder")
 if RS:FindFirstChild("RemotesFolder") then remotes = RS.RemotesFolder elseif RS:FindFirstChild("EntityInfo") then remotes = RS.EntityInfo elseif RS:FindFirstChild("Bricks") then remotes = RS.Bricks if Floor == "Hotel" then Floor = "OldHotel" end end
 
@@ -31,15 +30,26 @@ local padlockCode = remotes.PL
 
 local cRooms = workspace.CurrentRooms
 
+local function notify(title, text)
+  SGUI:SetCore("SendNotification", {Title = title, Text = text, Duration = 5})
+end
 local settings = {
   DoorsEsp = false,
+  ObjectivesEsp = false,
+  ItemsEsp = false,
+  EntitiesEsp = false,
+  HideSpotsEsp = false,
+  Misc1Esp = false,
+  Misc2Esp = false,
+  InstantPrompts = false,
+  wspeed = 0,
+  speedhack = false,
+  noAccel = false,
+  MoreData = false,
 }
 local anticheatDisabled = false
 local climbingConn = nil
-local currentHumanoid = nil
-local wspeed = 0
-local speedhack = false
-local noAcceleration = false
+
 local lookman = true local eyes = true
 
 local hidden = {}
@@ -124,9 +134,7 @@ end
 
 local function bypassChar(char)
   if not char then return end table.clear(physicProperties) wait() applyBypass() addLadderConn(char)
-  local hum = char:FindFirstChildOfClass("Humanoid")
-  currentHumanoid = hum
-  if noAcceleration then applyNoAcceleration(char, true) end
+  if settings.noAccel then applyNoAcceleration(char, true) end
 end
 
 
@@ -147,8 +155,8 @@ useEnemyModule.OnClientEvent:Connect(function(name)
 end)
 --👁️🚪🫪RUNSERVICE⚠️⚠️⚠️⚠️⚠️
 RUNSERV.RenderStepped:Connect(function()
-  local char = plr.Character if char then if anticheatDisabled then crouch:FireServer(true, true) end
-  if speedhack and currentHumanoid then currentHumanoid.WalkSpeed = wspeed + getSpeed(char, currentHumanoid) end end
+  local char = plr.Character if char then if anticheatDisabled then crouch:FireServer(true, true) local hum = char:FindFirstChildOfClass("Humanoid")
+  if settings.speedhack and hum then hum.WalkSpeed = settings.wspeed + getSpeed(char, hum) end end end
   if not (lookman and eyes) then if Floor == "Fools" or Floor == "OldHotel" then motor:FireServer(0, 65, 0, false) else motor:FireServer(-650) end end
 end)
 
@@ -159,21 +167,24 @@ local gif = loadstring(game:HttpGet("https://raw.githubusercontent.com/GIFKITS/g
 local window = gif:CreateWindow("👁️🚪DOORS 🗿TUFF HUB🔥", function()
   addConn:Disconnect() entityAddConn:Disconnect() local char = plr.Character if not char then return end
   applyNoAcceleration(char, false) local hum = char:FindFirstChildOfClass("Humanoid")
-  speedhack = false if hum then hum.WalkSpeed = getSpeed(char, hum) end
+  settings.speedhack = false if hum then hum.WalkSpeed = getSpeed(char, hum) end
 end)
 
 --Main
 local mainTab = window:CreateTab("Main")
 mainTab:CreateLabel("This is very tuff doors hub🗿🔥", Color3.fromRGB(230, 130, 0))
+PRS.PromptButtonHoldBegan:Connect(function(prompt, p) if not (settings.InstantPrompts and p == plr) then return end fireproximityprompt(prompt) end)
+mainTab:CreateToggle("Prompts", "Toggle instant proximity prompts", false, function(v) settings.InstantPrompts = v end)
 --Character
 local charTab = window:CreateTab("Character")
 charTab:CreateToggle("Speedhack", "Toggle Speedhack", false, function(v)
   local char = plr.Character if not char then return end
-  if v then speedhack = true return end
-  speedhack = false if currentHumanoid then currentHumanoid.WalkSpeed = getSpeed(char, currentHumanoid) end
+  if v then settings.speedhack = true return end
+  local hum = char:FindFirstChildOfClass("Humanoid")
+  settings.speedhack = false if hum then hum.WalkSpeed = getSpeed(char, hum) end
 end)
-charTab:CreateToggle("No Accel", "Disable acceleration", false, function(v) noAcceleration = v local char = plr.Character if not char then return end applyNoAcceleration(char, v) end)
-charTab:CreateSlider("Speed Boost", "Adjust speedhack speed boost", 0, 100, 0, function(v) wspeed = v end)
+charTab:CreateToggle("No Accel", "Disable acceleration", false, function(v) settings.noAccel = v local char = plr.Character if not char then return end applyNoAcceleration(char, v) end)
+charTab:CreateSlider("Speed Boost", "Adjust speedhack speed boost", 0, 100, 0, function(v) settings.wspeed = v end)
 --Entities
 local entTab = window:CreateTab("Entities")
 local disableable = {{"Screech", "Screech"}, {"A-90", "A90"}, {"Surge", "SurgeRemote"}, {"Halt", "ShadeResult"}}
@@ -190,77 +201,95 @@ local vsTab = window:CreateTab("Visuals")
 vsTab:CreateLabel("Esp", Color3.new(1, 1, 0))
 vsTab:CreateToggle("Rainbow", "Toggle rainbow effect", false, function(v) esp.Rainbow = v end)
 vsTab:CreateToggle("Tracer", "Toggle tracing lines", false, function(v) esp.Tracers = v end)
-local latest = {}
+local latest = {} local rSpec = {}
+local ins = table.insert
+local safe = {["Wardrobe"] = "Wardrobe", ["Toolshed"] = "Toolshed", ["Locker_Large"] = "Locker", ["CircularVent"] = "Vent", ["Dumpster"] = "Dumpster", ["Bed"] = "Bed", ["Double_Bed"] = "Double Bed", ["Wardrobe-FOOLS26"] = "Rush Wardrobe", ["Backdoor_Wardrobe"] = "Wardrobe", ["Rooms_Locker"] = "Locker", ["Rooms_Locker_Fridge"] = "Fridge Locker"}
+local misc = {["MouseHole"] = {"Louie"}, ["Toolshed_Small"] = {"Shears Toolshed"}, ["ChestBox"] = {"Chest"}, ["Toolbox"] = {"Toolbox"}, ["TrickOrTreatHouse"] = {"Trick Or Treat", "HouseDoor"}}
+local misc2 = {["ChestBoxLocked"] = "Locked Chest", ["Chest_Vine"] = "Vine Chest", ["Toolbox_Locked"] = "Locked Toolbox"}
+--SIGMA ONLY 🗿⚠️
+local objc = {["KeyObtain"] = {"Key", false, true}, ["ElectricalKeyObtain"] = {"Electrical Key"}, ["LeverForGate"] = {"Gate Lever", "Main"}, ["LiveHintBook"] = {"Hint Book"}, ["LiveBreakerPolePickup"] = {"Breaker Pole"}, ["FuseModel"] = {"Fuse"}, ["MinesGateButton"] = {"Gate Button"}, ["GardenGateButton"] = {"Gate Button"}, ["MinesGenerator"] = {"Generator"}, ["LibraryHintPaper"] = {"Hint Paper"}, ["TimerLever"] = {"Lever", false, true}, ["CringlePresent"] = {"Present Box", "ToolProp"}}
+--ITEMS⚠️🫡
+local items = {["Lighter"] = "Lighter", ["Flashlight"] = "Flashlight", ["Lockpick"] = "Lockpicks", ["Vitamins"] = "Vitamins", ["Bandage"] = "Bandage", ["Battery"] = "Battery", ["StarVial"] = "Starlight Vial", ["StarBottle"] = "Bottle of Starlight", ["StarJug"] = "Starlight Jug", ["Shakelight"] = "Shake-light", ["Straplight"] = "Strap-light", ["Bulklight"] = "Bulk-light", ["Candle"] = "Candle", ["Crucifix"] = "Crucifix", ["CrucifixWall"] = "Crucifix", ["Glowsticks"] = "Glowstick", ["SkeletonKey"] = "Skeleton Key", ["Candy"] = "Candy", ["ShieldMini"] = "Mini Shield Potion", ["ShieldBig"] = "Big Shield Potion", ["BandagePack"] = "Bandage Pack", ["BatteryPack"] = "Battery Pack", ["Smoothie"] = "Smoothie", ["RiftCandle"] = "Moonlight Candle", ["LaserPointer"] = "Laser Pointer", ["HolyGrenade"] = "Holy Hand Grenade", ["Shears"] = "Shears", ["Cheese"] = "Cheese", ["Bread"] = "Slice of Bread", ["AlarmClock"] = "Alarm Clock", ["RiftSmoothie"] = "Moonlight Float", ["GweenSoda"] = "Gween Soda", ["GlitchCube"] = "Glitch Fragment", ["Scanner"] = "NVCS-3000", ["Bomb"] = "Bomb", ["Knockbomb"] = "Knockbomb", ["Nanner"] = "Banana", ["BigBomb"] = "Big Bomb", ["ShakeBox"] = "Cardboard Box", ["GoldGun"] = "Gold Blaster", ["StopSign"] = "A-90 Sign", ["TipJar"] = "Tip Jar", ["Lantern"] = "Lantern", ["IronKey"] = "Crypt Key", ["KeyIron"] = "Crypt Key", ["IronKeyForCrypt"] = "Crypt Key", ["LotusPetal"] = "Lotus Petal", ["LotusHolder"] = "Lotus Petal", ["Compass"] = "Compass", ["LotusPetalPickup"] = "Lotus Petal", ["LanternLitItem"] = "Lantern", ["Multitool"] = "Multitool", ["RiftJar"] = "Rift Jar", ["AloeVera"] = "Aloe Vera", ["Donut"] = "D'oh nut", ["Lotus"] = "Lotus", ["BoxingGloves"] = "Boxing Gloves", ["StardustPickup"] = "Stardust"}
+--Entities😡
+local entities = {["Eyes"] = {"Eyes", true, {"👁️Eyes have spawned!", "Don't look at them."}, {"Main"}}, ["BackdoorRush"] = {"Blitz", true, {"Blitz has spawned!", "Hide in locker a little later not to waste time!"}}, ["RushMoving"] = {"Rush", true, {"Rush has spawned!", "Hide in locker quickly!"}}, ["AmbushMoving"] = {"Ambush", true, {"Ambush has spawned!", "Hide in locker quickly!"}}, ["A60"] = {"A-60", true, {"A-60 has spawned!", "Hide in locker and get ready to face A-90!"}}, ["A120"] = {"A-120", true, {"A-120 has spawned!", "Search for nearby locker!"}}, ["BackdoorLookman"] = {"Lookman", true, {"Lookman has spawned.", "Don't look at him."}}, ["FrozenAmbush"] = {"Frozen Ambush", true, {"Frozen Ambush has spawned!", "Hide in nearby locker quickly."}}}
+local roomEntities = {["MonumentEntity"] = {"Monument", "Top", {"Monument has spawned🗿", "Keep it in line of sight."}}, ["FigureRig"] = {"Figure", false, false, false, Floor == "Fools26"}, ["LiveEntityBramble"] = {"Bramble"}, ["Grumbo"] = {"Grumble", "GrumbleRig"}}
+local function hlRoomSpec(c, r)
+  if rSpec[c] or not c then return end
+  local n = c.Name local safeName = safe[n]
+  if safeName and settings.HideSpotsEsp then
+    esp:AddEsp({Obj = c, Name = safeName, Color = Color3.new(0, 1, 0)}) rSpec[c] = {"HideSpotsEsp", r} return
+  end
+  if settings.EntitiesEsp then
+    local eD = roomEntities[n] if eD then local exclude = eD[4] if exclude and table.find(exclude, c.Parent.Name) then return end local h = eD[2] local t = c if h then t = t:FindFirstChild(h) end if t then esp:AddEsp({Obj = t, Name = eD[1], Color = Color3.new(1, 0, 0), Transparent = eD[5]}) rSpec[t] = {"EntitiesEsp", r} end return end
+  end
+  if settings.ItemsEsp and c:FindFirstChild("PickedUpEvent") then
+    local itemName = items[n] if itemName then esp:AddEsp({Obj = c, Name = itemName, Color = "Rainbow"}) rSpec[c] = {"ItemsEsp", r} return end
+  end
+  if settings.Misc1Esp then
+    local miscD = misc[n] if miscD then local h = miscD[2] local t = c if h then t = t:FindFirstChild(h) end if t then esp:AddEsp({Obj = t, Name = miscD[1], Color = Color3.new(1, 0.1, 1)}) rSpec[t] = {"Misc1Esp", r} end return end
+  end
+  local misc2Name = misc2[n] if misc2Name and settings.Misc2Esp then esp:AddEsp({Obj = c, Name = misc2Name, Color = Color3.fromRGB(130, 0, 130)}) rSpec[c] = {"Misc2Esp", r} return end
+  if settings.ObjectivesEsp then
+    local obData = objc[n] if obData then local h = obData[2] local t = c if h then t = c:FindFirstChild(h) end if t then esp:AddEsp({Obj = t, Name = obData[1], Color = Color3.fromRGB(0, 200, 255)}) rSpec[t] = {"ObjectivesEsp", r} return end
+    end
+  end
+end
+local lastConn = false
 local function updRoomEsp()
+  if lastConn then lastConn:Disconnect() lastConn = false end
   local rIdx = plr:GetAttribute("CurrentRoom")
-  local nidx  = 1+rIdx
   local room = cRooms:FindFirstChild(""..rIdx)
-  if settings.DoorsEsp then
-  local nextRoom = cRooms:FindFirstChild(""..nidx)
   local cdoor = room:WaitForChild("Door")
+  for c, d in pairs(rSpec) do local rR = d[2] if settings[d[1]] and (not rR or rR == room) then continue end esp:RemoveObjectData(c) rSpec[c] = nil end
+  for _, c in room:GetDescendants() do hlRoomSpec(c, room) end
+  lastConn = room.DescendantAdded:Connect(function(d) if d:FindFirstChild("PickedUpEvent") or entities[d.Name] then hlRoomSpec(d, room) end end)
+  local nidx = 1+rIdx
+  local nextRoom = cRooms:FindFirstChild(""..nidx)
+  local hiding = 0 local tasks = 0
+  local obEsp = settings.ObjectivesEsp local moreData = settings.MoreData
+  if nextRoom and (obEsp or moreData) then
+    for _, c in nextRoom:GetDescendants() do
+      if not c then continue end local n = c.Name
+      if safe[n] then hiding += 1 elseif objc[n] then tasks += 1 end if not obEsp then continue end local obData = objc[n] if not (obData and obData[3]) then continue end if obData and obData[3] then local h = obData[2] local t = c if h then t = c:FindFirstChild(h) end if not t or rSpec[t] then continue end esp:AddEsp({Obj = t, Name = obData[1], Color = Color3.fromRGB(0, 200, 255)}) rSpec[t] = {"ObjectivesEsp"} end end
+  end
+  if settings.DoorsEsp then
   cdoor:WaitForChild("Hidden").Transparency = 1
-  if latest[cdoor] then latest[cdoor] = nil esp:UpdateText(cdoor, "Door "..rIdx+1) else esp:AddEsp({Obj = cdoor, Name = "Door "..rIdx+1, Color = Color3.new(1, 1, 0)}) end
+  local sD = {} local sdPadding = ""
+  if moreData and nextRoom then
+    if hiding > 0 then table.insert(sD, '<font color="#00ff00">'..hiding.."</font>") end
+    if tasks > 0 then table.insert(sD, '<font color="#00c8ff">'..tasks.."</font>") end
+  end
+  if 0 ~= #sD then sdPadding = "\n" end
+  if latest[cdoor] then latest[cdoor] = nil esp:UpdateText(cdoor, "Door "..rIdx+doorOffset..sdPadding..table.concat(sD, " ")) esp:UpdateColor(cdoor, Color3.new(1, 1, 0)) else esp:AddEsp({Obj = cdoor, Name = "Door "..rIdx+doorOffset..sdPadding..table.concat(sD, " "), Color = Color3.new(1, 1, 0)}) end
   if not (nextRoom and doorVisible(nidx)) then if #latest == 1 then esp:RemoveEsp(latest[1]) end latest = {[cdoor] = true} return end
   local ndoor = nextRoom:WaitForChild("Door")
   ndoor:WaitForChild("Hidden").Transparency = 1
-  if latest[ndoor] then latest[ndoor] = nil esp:UpdateText(ndoor, "Door "..nidx+1) else esp:AddEsp({Obj = ndoor, Name = "Door "..nidx+1, Color = Color3.new(1, 1, 0)}) end
+  if latest[ndoor] then latest[ndoor] = nil esp:UpdateText(ndoor, "Door "..nidx+doorOffset) esp:UpdateColor(ndoor, Color3.fromRGB(175, 175, 0)) else esp:AddEsp({Obj = ndoor, Name = "Door "..nidx+doorOffset, Color = Color3.fromRGB(175, 175, 0)}) end
   for c, _ in pairs(latest) do esp:RemoveEsp(c) end
   latest = {[cdoor] = true, [ndoor] = true}
   end
 end updRoomEsp() plr:GetAttributeChangedSignal("CurrentRoom"):Connect(updRoomEsp)
+mainTab:CreateToggle("More", "Show more data about next room", false, function(v) settings.MoreData = v updRoomEsp() end)
 vsTab:CreateToggle("Doors", "Highlight next door", false, function(v)
   if v then settings.DoorsEsp = true updRoomEsp() return end settings.DoorsEsp = false for c, _ in pairs(latest) do esp:RemoveObjectData(c) end table.clear(latest)
 end)
---Puzzles✌️⚠️💥🫪😡🐱🤑🔑🛢️😎💥🔥💀👁️👌
-local pzTab = window:CreateTab("Puzzles")
-if true then pzTab:CreateLabel("Puzzles options are WIP at this moment") return end
-if Floor == "Hotel" then
-local autoPadlock = false local padlockPassed = false
-local known = {false, false, false, false, false} local noHints = true
-local function processPadlock(c)
-  local fullyKnown = false
-  if Floor == "Fools" then for i = 6, 10 do known[i] = false end end
-  local lastPaper = false
-  local hintsList = plrGui.PermUI.Hints
-  local function updKnown(paper)
-    if paper then lastPaper = paper else paper = lastPaper end
-    local hints = hintsList:GetChildren() local paperUi = paper.UI:GetChildren()
-    local totalHints = 0
-    for _, hint in hints do
-      for _, ui in paperUi do
-        if hint:IsA("ImageLabel") and ui:IsA("ImageLabel") and hint.ImageRectOffset == ui.ImageRectOffset then known[tonumber(ui.Name)] = tonumber(hint.TextLabel.Text) totalHints += 1 noHints = false end
-      end
-    end
-    fullyKnown = totalHints == #known
-  end
-  hintsList.ChildAdded:Connect(updKnown)
-  local function updPaper(char)
-    local backpack = plr.Backpack
-    local paper = char:FindFirstChild("LibraryHintPaper") or char:FindFirstChild("LibraryHintPaperHard") or backpack:FindFirstChild("LibraryHintPaper") or backpack:FindFirstChild("LibraryHintPaperHard")
-    if paper then updKnown(paper) return end
-    local pc1 = false local pc2 = false
-    pc1 = char.ChildAdded:Connect(function(t) if t.Name == "LibraryHintPaper" or t.Name == "LibraryHintPaperHard" then if pc1 then pc1:Disconnect() pc1 = false end if pc2 then pc2:Disconnect() pc2 = false end updKnown(t) end end)
-    pc2 = backpack.ChildAdded:Connect(function(t) if t.Name == "LibraryHintPaper" or t.Name == "LibraryHintPaperHard" then if pc1 then pc1:Disconnect() pc1 = false end if pc2 then pc2:Disconnect() pc2 = false end updKnown(t) end end)
-  end updPaper(plr.Character or plr.CharacterAdded:Wait()) local caUpdK = plr.CharacterAdded:Connect(updPaper)
-  local plConn = RUNSERV.Heartbeat:Connect(function()
-    if not (autoPadlock and fullyKnown) then return end
-    if plr:DistanceFromCharacter(c:GetPivot().Position) > 10 then return end
-    padlockCode:FireServer(tonumber(table.concat(known))) 
-  end)
-  c:GetAttributeChangedSignal("Activated"):Once(function() plConn:Disconnect() caUpdK:Disconnect() padlockPassed = true end)
+vsTab:CreateToggle("Objectives", "Highlight current objectives", false, function(v) settings.ObjectivesEsp = v updRoomEsp() end)
+vsTab:CreateToggle("Items", "Highlight items!", false, function(v) settings.ItemsEsp = v updRoomEsp() end)
+local espHostile = {}
+local function applyEntityEsp(c)
+  if not settings.EntitiesEsp then return end
+  local eData = entities[c.Name]
+  if not eData then return end
+  table.insert(espHostile, c) esp:AddEsp({Obj = c, Name = eData[1], Color = Color3.new(1, 0, 0), Transparent = eData[2]})
 end
-if cRooms:FindFirstChild("50") then processPadlock(cRooms["50"].Door.Padlock) else local r50c r50c = cRooms.ChildAdded:Connect(function(c) if c.Name == "50" then r50c:Disconnect() processPadlock(c.Door.Padlock) end end) end
-pzTab:CreateToggle("Padlock", "Auto-complete padlock", false, function(v) autoPadlock= v end)
-if Floor == "Fools" then pzTab:CreateLabel("Bruteforce padlock code is disabled in SUPER HARD MODE", Color3.new(1, 0, 0)) else pzTab:CreateLabel("[Note] You need at least 1 known code digit to bruteforce.", Color3.fromRGB(230, 130, 0)) pzTab:CreateButton("Bruteforce", "Bruteforce padlock code", function() if padlockPassed or noHints then return end for a = 0, 9 do local ka = known[1] if ka and a ~= ka then continue end for b = 0, 9 do local kb = known[2] if kb and b ~= kb then continue end for c = 0, 9 do local kc = known[3] if kc and c ~= kc then continue end for d = 0, 9 do local kd = known[4] if kd and d ~= kd then continue end for e = 0, 9 do local ke = known[5] if ke and e ~= ke then continue end if padlockPassed then return end padlockCode:FireServer(10000*a+1000*b+100*c+10*d+e) end end end end end end) end
-
-local bBox = false local ibbox = false local autoBBox
-pzTab:CreateToggle("Breaker", "Auto-solve breaker box puzzle", false, function(v) autoBBox = v if ibbox then bBoxSolve:FireServer() end end)
-pzTab:CreateLabel("Interact with breaker box and script will auto-solve it!")
-local room100 = cRooms:FindFirstChild("100")
-local function passElectricalRoom(c)
-  bBox = c.ElevatorBreaker
-  local pcs pcs = bBox.SurfaceGui.Frame.Code:GetPropertyChangedSignal("Text"):Connect(function() ibbox = true if autoBBox then pcs:Disconnect() bBoxSolve:FireServer() end end)
-end if room100 then passElectricalRoom(room100) else
-  local r100c r100c = cRooms.ChildAdded:Connect(function(c) if "100" ~= c.Name then return end r100c:Disconnect() passElectricalRoom(c) end)
+workspace.ChildAdded:Connect(applyEntityEsp)
+vsTab:CreateToggle("Entities", "Highlight hostile entities", false, function(v)
+if v then
+  settings.EntitiesEsp = true for _, c in pairs(workspace:GetChildren()) do applyEntityEsp(c) end
+  return
 end
-end
+settings.EntitiesEsp = false for _, c in pairs(espHostile) do esp:RemoveObjectData(c) end table.clear(espHostile)
+end)
+vsTab:CreateToggle("Safe", "Highlight safe (hide) spots", false, function(v) settings.HideSpotsEsp = v updRoomEsp() end)
+vsTab:CreateToggle("Misc1", "Highlight main misc objects", false, function(v) settings.Misc1Esp = v updRoomEsp() end)
+vsTab:CreateToggle("Misc2", "Highlight secondary misc objects", false, function(v) settings.Misc2Esp = v updRoomEsp() end)
